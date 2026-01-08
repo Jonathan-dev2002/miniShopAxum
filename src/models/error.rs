@@ -5,7 +5,7 @@ use axum::{
 };
 use serde_json::json;
 
-// 1. สร้าง Enum เพื่อรวม Error ทุกประเภทในระบบ
+// สร้าง Enum เพื่อรวม Error ทุกประเภทในระบบ
 #[derive(Debug)]
 pub enum AppError {
     AuthError(String),
@@ -15,11 +15,10 @@ pub enum AppError {
     ValidationError(String),
 }
 
-// 2. บอก Axum ว่า Error แต่ละตัวคือ HTTP Status Code อะไร
+// บอก Axum ว่า Error แต่ละตัวคือ HTTP Status Code อะไร
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let (status_code, app_code, message) = match self {
-            // กำหนด Code เองตรงนี้ได้เลย เช่น AuthError = "4001"
             AppError::AuthError(msg) => (StatusCode::UNAUTHORIZED, "4001", msg),
             AppError::NotFound(msg) => (StatusCode::NOT_FOUND, "4004", msg),
             AppError::ValidationError(msg) => (StatusCode::BAD_REQUEST, "4000", msg),

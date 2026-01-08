@@ -5,15 +5,13 @@ use axum::{
     Json,
 };
 
-// 1. ส่วนของ Status (Code & Description)
 #[derive(Serialize)]
 pub struct Status {
     pub code: String,
     pub description: String,
 }
 
-// 2. ส่วนของ Response Wrapper (Generic T)
-// T คือ Data ข้างใน จะเป็น User, Token หรืออะไรก็ได้
+
 #[derive(Serialize)]
 pub struct ApiResponse<T> {
     pub status: Status,

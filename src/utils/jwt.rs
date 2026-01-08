@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use std::env;
 
+use crate::models::error::AppError;
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
     pub sub: String, // Subject (User ID)
@@ -42,4 +44,12 @@ pub fn decode_jwt(token: &str) -> Result<Claims, jsonwebtoken::errors::Error> {
     )?;
 
     Ok(token_data.claims)
+}
+
+// method สำหรับดึง user_id จาก Claims
+impl Claims {
+    pub fn get_user_id(&self) -> Result<Uuid, AppError> {
+        Uuid::parse_str(&self.sub)
+            .map_err(|_| AppError::AuthError("Invalid User ID format in token".into()))
+    }
 }
