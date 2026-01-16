@@ -60,6 +60,8 @@ fn products_routes() -> Router<AppState> {
         .route("/:id", get(products_controller::get_product_handler))
         .route("/:id", patch(products_controller::update_product_handler))
         .route("/:id", delete(products_controller::delete_product_handler))
+        .route("/search", get(products_controller::search_products_handler))
+        .route("/sync", get(products_controller::sync_products_handler))
         .layer(axum_middleware::from_fn(auth_middleware))
 }
 

@@ -179,3 +179,18 @@ pub struct CartResponse {
     pub total_price: Decimal, 
     pub total_items: i32,
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ProductSearchDocument {
+    pub id: Uuid,
+    pub name: String,
+    pub description: String,
+    pub price: Decimal,
+    pub category_id: Uuid,
+    pub image_url: Option<String>,
+}
+
+// Implement trait เพื่อระบุว่า field ไหนคือ ID (Primary Key ใน Meilisearch)
+impl ProductSearchDocument {
+    pub const INDEX_NAME: &'static str = "products";
+}
