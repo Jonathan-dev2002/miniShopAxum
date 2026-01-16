@@ -2,14 +2,18 @@ use sqlx::postgres::PgPoolOptions;
 use sqlx::{Pool, Postgres};
 use std::env;
 
-use crate::services::user_service::UserService;
 use crate::services::categories_service::CategoriesService;
+use crate::services::products_service::ProductsService;
+use crate::services::user_service::UserService;
+use crate::services::cart_service::CartService;
 #[derive(Clone)]
 pub struct AppState {
     pub db: Pool<Postgres>, // นี่คือ Connection Pool
     pub user_service: UserService,
     pub categories_service: CategoriesService,
-    }
+    pub products_service: ProductsService,
+    pub cart_service: CartService,
+}
 
 pub async fn init_db() -> Pool<Postgres> {
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");

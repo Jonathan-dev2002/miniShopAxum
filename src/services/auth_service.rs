@@ -44,7 +44,7 @@ impl AuthService {
             return Err(AppError::AuthError("Invalid password".into()));
         }
 
-        // 3. Generate JWT
+        // Generate JWT
         let token =
             jwt::encode_jwt(user.id).map_err(|e| AppError::InternalServerError(e.to_string()))?;
 

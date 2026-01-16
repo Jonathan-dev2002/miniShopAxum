@@ -19,8 +19,10 @@ use middleware::auth::auth_middleware;
 use routes::create_routes;
 use std::net::SocketAddr;
 
-use crate::services::user_service::UserService;
+use crate::services::{ cart_service, user_service::UserService};
 use crate::services::categories_service::CategoriesService;
+use crate::services::products_service::ProductsService;
+use crate::services::cart_service::CartService;
 
 #[tokio::main]
 async fn main() {
@@ -31,10 +33,14 @@ async fn main() {
     let pool = init_db().await;
     let user_service = UserService::new(pool.clone());
     let categories_service = CategoriesService::new(pool.clone());
+    let product_service = ProductsService::new(pool.clone());
+    let cart_service = CartService::new(pool.clone());
     let state = AppState {
         db: pool,
         user_service: user_service,
         categories_service: categories_service,
+        products_service: product_service,
+        cart_service: cart_service,
     };
 
     let app = create_routes().with_state(state);
