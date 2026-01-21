@@ -9,6 +9,7 @@ use axum::{
     extract::{Path, Query, State},
     response::IntoResponse,
 };
+use meilisearch_sdk::search::SearchResults;
 use uuid::Uuid;
 #[derive(serde::Deserialize)]
 pub struct SearchQuery {
@@ -43,7 +44,7 @@ pub async fn create_product_handler(
         image_url: None, 
     };
 
-    // เรียกแบบ Fire-and-forget (ไม่รอผลลัพธ์ก็ได้ ถ้าไม่อยากให้ API ช้า) 
+    // เรียกแบบ Fire-and-forget
     let _ = state.search_service.add_product(search_doc).await;
 
     Ok(ApiResponse::success(

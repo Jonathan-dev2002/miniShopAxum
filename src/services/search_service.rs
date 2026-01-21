@@ -1,4 +1,4 @@
-use meilisearch_sdk::client::Client;
+use meilisearch_sdk::{client::Client, search::SearchResults};
 use crate::models::{dto::ProductSearchDocument, error::AppError};
 
 #[derive(Clone)]
@@ -14,7 +14,7 @@ impl SearchService {
     pub async fn add_documents(&self, products: &[ProductSearchDocument]) -> Result<(), AppError> {
         let index = self.client.index(ProductSearchDocument::INDEX_NAME);
         
-        // ส่งข้อมูลเป็น Batch (เร็วกว่าส่งทีละตัว)
+        // ส่งข้อมูลเป็น Batch
         index.add_documents(products, Some("id"))
             .await
             .map_err(|e| {
@@ -36,7 +36,6 @@ impl SearchService {
         Ok(())
     }
 
-    // ฟังก์ชันค้นหา
     pub async fn search_products(&self, query: String) -> Result<Vec<ProductSearchDocument>, AppError> {
         let index = self.client.index(ProductSearchDocument::INDEX_NAME);
         
