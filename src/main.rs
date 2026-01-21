@@ -21,10 +21,14 @@ use std::net::SocketAddr;
 
 use meilisearch_sdk::client::Client;
 
-use crate::services::{ cart_service, search_service::{self, SearchService}, user_service::UserService};
+use crate::services::cart_service::CartService;
 use crate::services::categories_service::CategoriesService;
 use crate::services::products_service::ProductsService;
-use crate::services::cart_service::CartService;
+use crate::services::{
+    cart_service,
+    search_service::{self, SearchService},
+    user_service::UserService,
+};
 
 #[tokio::main]
 async fn main() {
@@ -43,10 +47,12 @@ async fn main() {
 
     let user_service = UserService::new(pool.clone());
     let categories_service = CategoriesService::new(pool.clone());
-    let product_service = ProductsService::new(pool.clone());
     let cart_service = CartService::new(pool.clone());
     let search_service = SearchService::new(meili_client.clone());
-
+    if let Err(e) = search_service.setup_settings().await {
+        println!("Warning: Could not setup Meilisearch settings: {:?}", e);
+    }
+    let product_service = ProductsService::new(pool.clone());
     let state = AppState {
         db: pool,
         meilisearch: meili_client,
@@ -54,7 +60,7 @@ async fn main() {
         categories_service: categories_service,
         products_service: product_service,
         cart_service: cart_service,
-        search_service:search_service,
+        search_service: search_service,
     };
 
     let app = create_routes().with_state(state);
