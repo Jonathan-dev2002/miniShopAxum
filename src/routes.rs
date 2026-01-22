@@ -1,3 +1,4 @@
+use crate::controllers::products_controller::create_products_bulk_handler;
 use crate::controllers::{auth_controller, products_controller, user_controller};
 use crate::middleware::auth::auth_middleware;
 use crate::{config::AppState, controllers::categories_controller};
@@ -62,6 +63,7 @@ fn products_routes() -> Router<AppState> {
         .route("/:id", delete(products_controller::delete_product_handler))
         .route("/search", get(products_controller::search_products_handler))
         .route("/sync", get(products_controller::sync_products_handler))
+        .route("/bulk", post(products_controller::create_products_bulk_handler))
         .layer(axum_middleware::from_fn(auth_middleware))
 }
 

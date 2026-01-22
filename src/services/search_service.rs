@@ -48,17 +48,8 @@ impl SearchService {
         Ok(())
     }
 
-    pub async fn delete_product(&self, id: Uuid) -> Result<(), AppError> {
-        let index = self.client.index(ProductSearchDocument::INDEX_NAME);
-
-        index.delete_document(id).await.map_err(|e| {
-            println!("Meilisearch Delete Error: {:?}", e);
-            AppError::InternalServerError("Failed to delete product from index".into())
-        })?;
-
-        Ok(())
-    }
-
+    
+    // -------- Search --------
     pub async fn search_products(
         &self,
         params: SearchQuery,
@@ -66,7 +57,7 @@ impl SearchService {
         let index = self.client.index(ProductSearchDocument::INDEX_NAME);
         let sort_criteria = params.sort.as_deref().map(|s| [s]);
         let mut search_builder = index.search();
-        
+
         if let Some(query_str) = &params.q {
             search_builder.with_query(query_str);
         }
@@ -100,6 +91,7 @@ impl SearchService {
         Ok(products)
     }
 
+    // -------- Search Settings --------
     pub async fn setup_settings(&self) -> Result<(), AppError> {
         let index = self.client.index(ProductSearchDocument::INDEX_NAME);
 
@@ -114,6 +106,18 @@ impl SearchService {
         })?;
 
         println!("Meilisearch settings updated!");
+        Ok(())
+    }
+
+    // -------- Delete --------
+    pub async fn delete_product(&self, id: Uuid) -> Result<(), AppError> {
+        let index = self.client.index(ProductSearchDocument::INDEX_NAME);
+
+        index.delete_document(id).await.map_err(|e| {
+            println!("Meilisearch Delete Error: {:?}", e);
+            AppError::InternalServerError("Failed to delete product from index".into())
+        })?;
+
         Ok(())
     }
 

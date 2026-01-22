@@ -115,9 +115,9 @@ impl ProductsRepository {
             FROM products p
             JOIN categories c ON p.category_id = c.id
             WHERE p.id = $1
-            "#
-        ) 
-        .bind(id) 
+            "#,
+        )
+        .bind(id)
         .fetch_optional(&self.pool)
         .await
     }
@@ -163,5 +163,35 @@ impl ProductsRepository {
         .execute(&self.pool)
         .await?;
         Ok(result.rows_affected() > 0)
+    }
+
+    pub async fn create_products_bulk(
+        &self,
+        products: Vec<ProductEntity>,
+    ) -> Result<Vec<ProductEntity>, sqlx::Error> {
+        let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(
+            "INSERT INTO products (id, category_id, name, description, price, stock, is_active, created_at, updated_at, average_rating, review_count) ",
+        );
+
+        query_builder.push_values(products, |mut b, product| {
+            b.push_bind(product.id)
+                .push_bind(product.category_id)
+                .push_bind(product.name)
+                .push_bind(product.description)
+                .push_bind(product.price)
+                .push_bind(product.stock)
+                .push_bind(product.is_active)
+                .push_bind(product.created_at)
+                .push_bind(product.updated_at)
+                .push_bind(product.average_rating)
+                .push_bind(product.review_count);
+        });
+
+        query_builder.push(" RETURNING *");
+
+        let query = query_builder.build_query_as::<ProductEntity>();
+        let results = query.fetch_all(&self.pool).await?;
+
+        Ok(results)
     }
 }

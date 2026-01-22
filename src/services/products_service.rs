@@ -3,9 +3,11 @@ use crate::models::{
         FilterOptions, PagedResponse, ProductRequest, ProductResponse, ProductSearchDocument,
         UpdateProductRequest,
     },
+    entity::ProductEntity,
     error::AppError,
 };
 use crate::repositories::products_repository::ProductsRepository;
+use chrono::Utc;
 use sqlx::{Pool, Postgres};
 use uuid::Uuid;
 
@@ -95,5 +97,58 @@ impl ProductsService {
             return Err(AppError::NotFound("Product not found".into()));
         }
         Ok(())
+    }
+
+    pub async fn create_products_bulk(
+        &self,
+        requests: Vec<ProductRequest>,
+    ) -> Result<Vec<ProductResponse>, AppError> {
+        let mut entities = Vec::new();
+        let now = Utc::now();
+
+        // 1. แปลง Request -> Entity
+        for req in requests {
+            entities.push(ProductEntity {
+                id: Uuid::new_v4(),
+                category_id: req.category_id,
+                name: req.name,
+                description: req.description,
+                price: req.price,
+                stock: req.stock,
+                is_active: req.is_active.unwrap_or(true),
+
+                average_rating: 0.0,
+                review_count: 0,
+
+                created_at: now,
+                updated_at: None,
+            });
+        }
+
+        let created_products = self
+            .repo
+            .create_products_bulk(entities)
+            .await
+            .map_err(|e| AppError::DatabaseError(e.to_string()))?;
+
+        let responses = created_products
+            .into_iter()
+            .map(|p| ProductResponse {
+                id: p.id,
+                category_id: p.category_id,
+                category_name: "".to_string(),
+                name: p.name,
+                description: p.description,
+                is_active: p.is_active,
+                price: p.price,
+                stock: p.stock,
+                average_rating: p.average_rating,
+                review_count: p.review_count,
+                created_at: p.created_at,
+                updated_at: p.updated_at,
+            })
+            .collect();
+
+        Ok(responses)
     }
 }

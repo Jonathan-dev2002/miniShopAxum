@@ -13,10 +13,10 @@ use meilisearch_sdk::search::SearchResults;
 use uuid::Uuid;
 #[derive(serde::Deserialize)]
 pub struct SearchQuery {
-    pub q: Option<String>,      
-    pub filter: Option<String>, 
-    pub sort: Option<String>,   
-    pub limit: Option<usize>,   
+    pub q: Option<String>,
+    pub filter: Option<String>,
+    pub sort: Option<String>,
+    pub limit: Option<usize>,
     pub offset: Option<usize>,
 }
 
@@ -162,9 +162,7 @@ pub async fn sync_products_handler(
     ))
 }
 
-pub async fn reindex_handler(
-    State(state): State<AppState>,
-) -> Result<impl IntoResponse, AppError> {
+pub async fn reindex_handler(State(state): State<AppState>) -> Result<impl IntoResponse, AppError> {
     let batch_size = 1000;
     let mut page = 1;
 
@@ -200,7 +198,6 @@ pub async fn reindex_handler(
             })
             .collect();
 
-
         // ถ้าใช้ blocking ในลูปนี้ API อาจจะ Timeout ได้ถ้าข้อมูลเยอะจัด
         // แนะนำให้ใช้ add_documents ธรรมดา แล้วปล่อยให้ Meilisearch จัดคิวเอง
         state.search_service.add_documents(&docs).await?;
@@ -212,5 +209,32 @@ pub async fn reindex_handler(
     Ok(ApiResponse::<()>::success_no_data(
         "1000",
         "Sync Completed! Index is now up-to-date.",
+    ))
+}
+
+pub async fn create_products_bulk_handler(
+    State(state): State<AppState>,
+    Json(payload): Json<Vec<ProductRequest>>,
+) -> Result<impl IntoResponse, AppError> {
+    let products = state.products_service.create_products_bulk(payload).await?;
+
+    let search_docs: Vec<ProductSearchDocument> = products
+        .iter()
+        .map(|p| ProductSearchDocument {
+            id: p.id,
+            name: p.name.clone(),
+            description: p.description.clone().unwrap_or_default(),
+            price: p.price,
+            category_id: p.category_id,
+            image_url: None,
+        })
+        .collect();
+
+    state.search_service.add_documents(&search_docs).await?;
+
+    Ok(ApiResponse::success(
+        products,
+        "1000",
+        "Bulk create products successfully.",
     ))
 }
