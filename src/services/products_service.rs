@@ -1,5 +1,8 @@
 use crate::models::{
-    dto::{FilterOptions, PagedResponse, ProductRequest, ProductResponse, UpdateProductRequest},
+    dto::{
+        FilterOptions, PagedResponse, ProductRequest, ProductResponse, ProductSearchDocument,
+        UpdateProductRequest,
+    },
     error::AppError,
 };
 use crate::repositories::products_repository::ProductsRepository;
